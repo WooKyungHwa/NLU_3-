@@ -11,9 +11,11 @@
 - Pytorch, HuggingFace 라이브러리를 이용해 BERT를 Fine-Tuning
 
 - 배경 : 문장 유사도 분석 ( STS, Semantic Textual Similarity )는 주어진 두 텍스트가 의미적 혹은 문맥적으로 얼마나 유사한지를 분석하여 수치적으로 나타내는 것이 주 목적이다.
-- 프로젝트 목표 : 기존 연구와 모델의 재현, 기존 모델보다 성능 향상시키는 것이 목표
+- 프로젝트 목표
+  1. 기존 연구와 모델의 재현
+  2. 기존 모델보다 성능 향상시키는 것이 목표
 - Dataset : KLUE-STS
-- Klue/bert-base, DistilKoBERT, KR-BERT, RoBERTa 모델을 Fine-Tuning하여 구현, API로 시연
+- Klue/bert-base, KR-BERT, RoBERTa 모델을 Fine-Tuning하여 구현, API로 시연
 - 활용 장비 및 재료(개발 환경 등)
   - Colab Pro ( GPU : T4, P100 / RAM : 최대 25.51GB / CPU : Intel(R) Xeon(R) CPU @ 2.30GHz )
 
@@ -29,9 +31,12 @@
 
 ## Data Preprocessing
 
-- Re.sub를 통해 한글을 제외한 다른 문자, 공백 제거
+- Re.sub를 통해 한글을 제외한 다른 문자, 공백 제거 시도
+  - re.sub를 적용하지 않고(원본으로) 훈련시켜보았을 때 원본으로 했을 때가 더 높게 나왔다.
+    - 영어와 특수문자(마침표)도 token_id가 있다. 
+    - 위치, 위치#, #위치 등 같은 의미이지만, 다른 token_id가 있어 공백을 제거하였을 때 의미를 해칠 수도 있다.
 - Pre-training된 모델의 tokenizer를 통해 tokenizing
-- 영어도 token_id가 있었다는 점에서 re.sub를 적용하지 않고(원본으로) 훈련시켜보았으나 큰 차이가 없었다.
+
 
 - sentence 데이터  
 ![preprocessing_raw.png](res/img/preprocessing_raw.png)
@@ -46,8 +51,13 @@
 
 # Model Class
 
-- BertForNextSentencePrediction 클래스로 Pre-trained된 모델을 받아서 Fine-Tuning
-- [preprocessing_to_model.ipynb](preprocessing_to_model.ipynb) : preprocessing 부터 model class code를 담고 있는 파일
+- BERT일 경우, BertForNextSentencePrediction 클래스로 Pre-trained된 모델을 받아서 Fine-Tuning => 문장의 유사성(STS)과 다음 문장 예측(NSP)은 목적이 다르다. BertModel에 layer를 쌓아 STS를 구하는 것이 낫다. 
+- RoBERTa일 경우 아래 3가지 방법으로 진행
+  - RoBERTModel을 받아 2 layer 추가(STS)
+  - AutoModelForSequenceClassification를 통해 분류
+  - SentenceTransformer와 EmbeddingSimilarityEvaluator을 통해 분류
+
+- [예시 코드](preprocessing_to_model.ipynb) : preprocessing 부터 model class code를 담고 있는 파일
 
 <br>
 
@@ -64,6 +74,9 @@
 
 # HyperParameter 조정
 
+- 결과 : BERT의 경우, pre-trained되어있기 때문에 파라미터(batch_size, learning rate) 조정 보다 데이터의 크기가 성능 향상에 더 도움이 된다.
+
+- 하이퍼파라미터 조정 과정
 
 ![compare_model_result.png](res/img/compare_model_result.png)
 
