@@ -78,7 +78,7 @@
 
 - 하이퍼파라미터 조정 과정
 
-![compare_model_result.png](res/img/compare_model_result.png)
+![compare_model_result.png](res/img/compare_model_result1.png)
 
 <br><br>
 
